@@ -1,13 +1,32 @@
 "use client";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import dynamic from "next/dynamic";
-import { Button } from "@nextui-org/react";
+import Link from "next/link";
 import { useState } from "react";
-import TelegramAuth from "@/components/TelegramLogin/TelegramLogin";
 
 const MapWithNoSSR = dynamic(() => import("@/components/Map"), {
   ssr: false,
   loading: () => null,
 });
+
+const CITIES = [
+  "Minsk",
+  "Grodno",
+  "Brest",
+  "Vitebsk",
+  "Gomel",
+  "Mogilev",
+  "Country",
+];
 
 export default function Home() {
   const [city, setCity] = useState("Minsk");
@@ -15,75 +34,30 @@ export default function Home() {
   return (
     // TODO: Make animated background
     // TODO: Button title "Explore.. Minsk/Brest/Gomel/Vitebsk..~switching cities~"
-    <>
+    <div className="flex h-full">
+      <Card className="w-[350px]">
+        <CardHeader>
+          <CardTitle>Vandroyki.by</CardTitle>
+          <CardDescription>Find places where to go...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {CITIES.map((city) => (
+            <Button
+              key={city}
+              onClick={() => setCity(city)}
+              className="w-[60px], m-[5px]"
+            >
+              {city}
+            </Button>
+          ))}
+        </CardContent>
+        <CardFooter>
+          <Link href="/places">
+            <Button className="min-w-full">Places</Button>
+          </Link>
+        </CardFooter>
+      </Card>
       <MapWithNoSSR city={city} />
-      <div className="border-none bg-foreground/10  max-w-[610px] absolute right-10 top-0 bottom-0 p-14">
-        <h1 className="text-5xl text-black font-extrabold leading-tight select-none">
-          Vandroyki.by
-        </h1>
-        <p className="select-none align-middle mt-6">
-          Find places where to go...
-        </p>
-        <section className="flex flex-col">
-          <Button
-            color="primary"
-            size="lg"
-            onClick={() => setCity("Minsk")}
-            className="w-auto mt-6 text-xl font-semibold"
-          >
-            Explore.. Minsk
-          </Button>
-          <Button
-            color="primary"
-            size="lg"
-            onClick={() => setCity("Brest")}
-            className="w-auto mt-6 text-xl font-semibold"
-          >
-            Explore.. Brest
-          </Button>
-          <Button
-            color="primary"
-            size="lg"
-            onClick={() => setCity("Vitebsk")}
-            className="w-auto mt-6 text-xl font-semibold"
-          >
-            Explore.. Vitebsk
-          </Button>
-          <Button
-            color="primary"
-            size="lg"
-            onClick={() => setCity("Mogilev")}
-            className="w-auto mt-6 text-xl font-semibold"
-          >
-            Explore.. Mogilev
-          </Button>
-          <Button
-            color="primary"
-            size="lg"
-            onClick={() => setCity("Gomel")}
-            className="w-auto mt-6 text-xl font-semibold"
-          >
-            Explore.. Gomel
-          </Button>
-          <Button
-            color="primary"
-            size="lg"
-            onClick={() => setCity("Grodno")}
-            className="w-auto mt-6 text-xl font-semibold"
-          >
-            Explore.. Grodno
-          </Button>
-          <Button
-            color="primary"
-            size="lg"
-            onClick={() => setCity("Country")}
-            className="w-auto mt-6 text-xl font-semibold"
-          >
-            Zoom out
-          </Button>
-          {/* <TelegramAuth /> */}
-        </section>
-      </div>
-    </>
+    </div>
   );
 }

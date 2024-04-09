@@ -166,13 +166,12 @@ const Map = ({ city }: { city: string }) => {
   }, []);
 
   return (
-    <div className="fade-content-ver w-[82%] h-[100%] mx-auto overflow-hidden absolute left-0 top-0 my-auto">
-      <div className="fade-content-hor w-[100%] h-[100%] overflow-hidden ">
+    <div className="fade-content-ver w-[100%] h-[100%] mx-auto overflow-hidden my-auto">
+      <div className="relative fade-content-hor w-[100%] h-[100%] overflow-hidden ">
         <MapContainer
           className="absolute top-[50%] left-[50%] translate-x-[-52%] translate-y-[-50%]"
           style={{
-            backgroundImage:
-              "url('http://www.asia-turismo.com/imagens/asia-imagem.jpg')",
+            backgroundColor: "#ffffff",
             width: "2400px",
             height: "2010px",
             margin: "0px",
