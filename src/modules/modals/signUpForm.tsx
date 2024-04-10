@@ -14,11 +14,8 @@ import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import API from "@/api";
 import Link from "next/link";
-
-interface SignUpFormProps {
-  showSignIn: () => void;
-  showSignUp: () => void;
-}
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface FormValues {
   firstName: string;
@@ -28,7 +25,8 @@ interface FormValues {
   password: string;
 }
 
-export function SignUpForm({ showSignIn, showSignUp }: SignUpFormProps) {
+export function SignUpForm() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -39,7 +37,7 @@ export function SignUpForm({ showSignIn, showSignUp }: SignUpFormProps) {
   const onSuccess = () => {
     toast.success("Sign up successful!");
     reset();
-    showSignIn();
+    router.push("/?signIn=true");
   };
   const onError = () => {
     toast.error("Failed to sign up");
@@ -131,18 +129,21 @@ export function SignUpForm({ showSignIn, showSignUp }: SignUpFormProps) {
             >
               Create an account
             </Button>
-            <Link href={`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google`}>
-              <Button variant="outline" className="w-full">
-                Sign up with Google
-              </Button>
-            </Link>
+
+            <Button
+              onClick={() => signIn("google", { callbackUrl: "/" })}
+              variant="outline"
+              className="w-full"
+            >
+              Sign up with Google
+            </Button>
           </div>
         </form>
         <div className="mt-4 text-center text-sm">
           Already have an account?
-          <Button onClick={showSignIn} className="underline">
+          <Link href="/?signIn=true" className="underline">
             Sign in
-          </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>

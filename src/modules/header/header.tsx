@@ -2,15 +2,22 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { JSX, SVGProps, useState } from "react";
-import { LoginForm } from "../loginForm";
-import { SignUpForm } from "../signUpForm";
-import { useUserStore } from "@/store/zustand";
 import { Badge } from "@/components/ui/badge";
-import { useStore } from "@/hooks/useStore";
+import Image from "next/image";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 export const Header = () => {
-  const store = useStore(useUserStore, (state) => state);
-  const user = store?.user;
+  const { data: session } = useSession();
+  const user = session?.user;
   const [showSignInForm, setShowSignInForm] = useState(false);
   const [showSignUpForm, setShowSignUpForm] = useState(false);
 
@@ -32,21 +39,9 @@ export const Header = () => {
     }
   };
 
-  const signOut = () => {
-    window.localStorage.removeItem("refreshToken");
-    window.localStorage.removeItem("accessToken");
-    store && store.logOut();
-  };
-
   return (
     <>
-      {showSignInForm && (
-        <LoginForm showSignUp={showSignUp} showSignIn={showSignIn} />
-      )}
-      {showSignUpForm && (
-        <SignUpForm showSignUp={showSignUp} showSignIn={showSignIn} />
-      )}
-      <header className="absolute left-0 right-0 top-0 z-50 bg-background flex h-[80px] w-full shrink-0 items-center px-4 md:px-6 shadow-[#b5b5b55b] shadow-md">
+      <header className="fixed left-0 right-0 top-0 z-50 bg-background flex h-[80px] w-full shrink-0 items-center px-4 md:px-6 shadow-[#b5b5b55b] shadow-md">
         <Link className="mr-6 hidden lg:flex" href="#">
           <CarIcon className="h-6 w-6" />
           <span className="sr-only">Car E-commerce</span>
@@ -64,39 +59,30 @@ export const Header = () => {
           >
             Places
           </Link>
-          {/* <Link
-            className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
-            href="#"
-          >
-            Cars
-          </Link>
-          <Link
-            className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
-            href="#"
-          >
-            Portfolio
-          </Link>
-          <Link
-            className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
-            href="#"
-          >
-            Contact
-          </Link> */}
-          {!store?.user && (
+          {user?.role === "MANAGER" && (
+            <Link
+              className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+              href="/dashboard"
+            >
+              Dashboard
+            </Link>
+          )}
+
+          {!user && (
             <>
-              <Button
-                onClick={showSignIn}
-                className="justify-self-end px-2 py-1 text-xs"
-                variant="outline"
-              >
-                Sign in
-              </Button>
-              <Button
-                onClick={showSignUp}
-                className="justify-self-end px-2 py-1 text-xs"
-              >
-                Sign Up
-              </Button>
+              <Link href="/?signIn=true">
+                <Button
+                  className="justify-self-end px-2 py-1 text-xs"
+                  variant="outline"
+                >
+                  Sign in
+                </Button>
+              </Link>
+              <Link href="/?signUp=true">
+                <Button className="justify-self-end px-2 py-1 text-xs">
+                  Sign Up
+                </Button>
+              </Link>
             </>
           )}
           {!!user && (
@@ -106,12 +92,34 @@ export const Header = () => {
                   ? user.username
                   : `${user.firstName} ${user.lastName}`}
               </Badge>
-              <Button
-                onClick={signOut}
-                className="justify-self-end px-2 py-1 text-xs"
-              >
-                Sign out
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="overflow-hidden rounded-full"
+                  >
+                    <Image
+                      src={user.picture || "/avatarPlaceholder.jpeg"}
+                      width={36}
+                      height={36}
+                      alt="Avatar"
+                      className="overflow-hidden rounded-full"
+                      priority
+                    />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>Settings</DropdownMenuItem>
+                  <DropdownMenuItem>Support</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           )}
         </div>

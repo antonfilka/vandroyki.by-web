@@ -32,8 +32,6 @@ export default function Home() {
   const [city, setCity] = useState("Minsk");
 
   return (
-    // TODO: Make animated background
-    // TODO: Button title "Explore.. Minsk/Brest/Gomel/Vitebsk..~switching cities~"
     <div className="flex h-full">
       <Card className="w-[350px]">
         <CardHeader>

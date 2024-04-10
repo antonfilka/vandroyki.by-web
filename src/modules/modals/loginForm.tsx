@@ -10,27 +10,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
-import { useUserStore } from "@/store/zustand";
 import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
-import API from "@/api";
-import { SignInResponse } from "@/api/auth";
-import { useStore } from "@/hooks/useStore";
 import Link from "next/link";
-
-interface LoginFormProps {
-  showSignUp: () => void;
-  showSignIn: () => void;
-}
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface FormValues {
   email: string;
   password: string;
 }
 
-export function LoginForm({ showSignUp, showSignIn }: LoginFormProps) {
-  const store = useStore(useUserStore, (state) => state);
-
+export function LoginForm() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -38,29 +29,21 @@ export function LoginForm({ showSignUp, showSignIn }: LoginFormProps) {
     formState: { errors },
   } = useForm<FormValues>();
 
-  const onSuccess = (data: SignInResponse) => {
-    store && store.login(data.user);
-    window.localStorage.setItem(
-      "refreshToken",
-      data.backendTokens.refreshToken
-    );
-    window.localStorage.setItem("accessToken", data.backendTokens.accessToken);
-    toast.success("Welcome!");
-    reset();
-    showSignIn();
-  };
-  const onError = () => {
-    toast.error("Failed to sign in");
-  };
-
-  const signInMutation = useMutation({
-    mutationFn: API.AUTH.SIGN_IN,
-    onSuccess,
-    onError,
-  });
-
   const onSubmit = async (data: FormValues) => {
-    signInMutation.mutate(data);
+    const res = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+      callbackUrl: "/",
+    });
+
+    if (!res?.error) {
+      toast.success("Welcome!");
+      reset();
+      router.push("/");
+    } else {
+      toast.error("Failed to sign in");
+    }
   };
 
   return (
@@ -105,18 +88,21 @@ export function LoginForm({ showSignUp, showSignIn }: LoginFormProps) {
             <Button type="submit" className="w-full">
               Login
             </Button>
-            <Link href={`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google`}>
-              <Button variant="outline" className="w-full">
-                Login with Google
-              </Button>
-            </Link>
+
+            <Button
+              onClick={() => signIn("google", { callbackUrl: "/" })}
+              variant="outline"
+              className="w-full"
+            >
+              Login with Google
+            </Button>
           </div>
         </form>
         <div className="mt-4 text-center text-sm">
           Don&apos;t have an account?{" "}
-          <Button onClick={showSignUp} className="underline">
+          <Link href="/?signUp=true" className="underline">
             Sign up
-          </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>

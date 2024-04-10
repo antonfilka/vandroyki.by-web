@@ -1,3 +1,4 @@
+import { BackendTokens, User } from "@/lib/types";
 import { axiosInstance } from "./axiosConfig";
 
 const AUTH_URLS = {
@@ -15,44 +16,17 @@ interface SignUpPayload {
   password: string;
 }
 
-interface SignUpResponse {
-  firstName: string;
-  lastName: string;
-  email: string;
-  username: string;
-}
 interface SignInPayload {
   email: string;
   password: string;
 }
 
 export interface SignInResponse {
-  user: {
-    id: number;
-    role: "USER" | "MANAGER";
-    firstName: string;
-    lastName: string;
-    email: string;
-    username: string;
-  };
-  backendTokens: {
-    accessToken: string;
-    refreshToken: string;
-  };
+  user: User;
+  backendTokens: BackendTokens;
 }
 
-export interface GetMyProfileResponse {
-  id: number;
-  username?: string;
-  accessToken?: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  picture?: string;
-  role: "USER" | "MANAGER";
-}
-
-async function SignUp(data: SignUpPayload): Promise<SignUpResponse> {
+async function SignUp(data: SignUpPayload): Promise<User> {
   const response = await axiosInstance.post(AUTH_URLS.SIGN_UP, data);
   return response.data;
 }
@@ -61,9 +35,7 @@ async function SignIn(data: SignInPayload): Promise<SignInResponse> {
   return response.data;
 }
 
-async function GetMyProfile(
-  accessToken: string
-): Promise<GetMyProfileResponse> {
+async function GetMyProfile(accessToken: string): Promise<User> {
   axiosInstance.defaults.headers.common[
     "Authorization"
   ] = `Bearer ${accessToken}`;

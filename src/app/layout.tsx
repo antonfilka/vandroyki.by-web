@@ -5,6 +5,7 @@ import { Providers } from "./providers";
 import { cn } from "@/lib/utils";
 import { Header } from "@/modules/header";
 import { Toaster } from "sonner";
+import { Modals } from "@/modules/modals";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -31,7 +32,8 @@ export default function RootLayout({
       >
         <Providers>
           <Toaster richColors />
-          <main className="relative bg-background text-foreground flex w-screen min-h-screen h-screen flex-col items-center">
+          <Modals />
+          <main className="relative bg-background text-foreground flex w-screen min-h-screen h-screen flex-col items-center no-scrollbar">
             <Header />
             <div className="w-full h-full mt-[80px]">{children}</div>
           </main>
