@@ -1,4 +1,4 @@
 export * from "./header";
-export * from "./loginForm";
-export * from "./signUpForm";
+export * from "./modals";
 export * from "./placesList";
+export * from "./protectedRoute";

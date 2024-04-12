@@ -1,7 +1,7 @@
 export type User = {
   id: number;
   email: string;
-  role: "USER" | "MANAGER";
+  role: Role;
   firstName?: string;
   lastName?: string;
   username?: string;
@@ -13,3 +13,15 @@ export type BackendTokens = {
   refreshToken: string;
   expiresIn: number;
 };
+
+export type TelegramAuthPayload = {
+  id: number;
+  username?: string;
+  firstName: string;
+  lastName?: string;
+  picture?: string;
+  authDate: number;
+  hash: string;
+};
+
+export type Role = "MANAGER" | "USER" | "ADMIN";

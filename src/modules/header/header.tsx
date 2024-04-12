@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { JSX, SVGProps, useState } from "react";
+import { JSX, SVGProps, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import {
@@ -12,32 +12,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { SignInOptions, signIn, signOut, useSession } from "next-auth/react";
+import { TLoginButton, TLoginButtonSize } from "react-telegram-auth";
+import { TelegramAuthPayload } from "@/lib/types";
+import { toast } from "sonner";
 
 export const Header = () => {
   const { data: session } = useSession();
   const user = session?.user;
-  const [showSignInForm, setShowSignInForm] = useState(false);
-  const [showSignUpForm, setShowSignUpForm] = useState(false);
 
-  const showSignUp = () => {
-    if (showSignUpForm) {
-      setShowSignUpForm(false);
-    } else {
-      setShowSignInForm(false);
-      setShowSignUpForm(true);
-    }
-  };
+  const [telegramData, setTelegramData] = useState<TelegramAuthPayload | null>(
+    null
+  );
 
-  const showSignIn = () => {
-    if (showSignInForm) {
-      setShowSignInForm(false);
-    } else {
-      setShowSignUpForm(false);
-      setShowSignInForm(true);
+  useEffect(() => {
+    async function auth(telegramData: SignInOptions | undefined) {
+      const res = await signIn("credentials", telegramData);
+      console.log(res);
+      if (!res?.error) {
+        toast.success("Welcome!");
+      } else {
+        toast.error("Failed to sign in");
+      }
     }
-  };
+    if (telegramData && !user) {
+      auth(telegramData);
+    }
+  }, [telegramData, user]);
 
   return (
     <>
@@ -59,7 +60,7 @@ export const Header = () => {
           >
             Places
           </Link>
-          {user?.role === "MANAGER" && (
+          {(user?.role === "MANAGER" || user?.role === "ADMIN") && (
             <Link
               className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
               href="/dashboard"
@@ -69,21 +70,25 @@ export const Header = () => {
           )}
 
           {!user && (
-            <>
-              <Link href="/?signIn=true">
-                <Button
-                  className="justify-self-end px-2 py-1 text-xs"
-                  variant="outline"
-                >
-                  Sign in
-                </Button>
-              </Link>
-              <Link href="/?signUp=true">
-                <Button className="justify-self-end px-2 py-1 text-xs">
-                  Sign Up
-                </Button>
-              </Link>
-            </>
+            <TLoginButton
+              botName="vandroyki_by_bot"
+              buttonSize={TLoginButtonSize.Large}
+              lang="en"
+              usePic={true}
+              cornerRadius={20}
+              onAuthCallback={(user) =>
+                setTelegramData({
+                  id: user.id,
+                  username: user.username,
+                  firstName: user.first_name,
+                  lastName: user.last_name,
+                  picture: user.photo_url,
+                  authDate: user.auth_date,
+                  hash: user.hash,
+                })
+              }
+              requestAccess={"write"}
+            />
           )}
           {!!user && (
             <>
