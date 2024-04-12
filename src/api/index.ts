@@ -7,3 +7,9 @@ const API = {
 };
 
 export default API;
+
+export const QUERY_KEYS = {
+  CITIES: "cities",
+  INTERESTS: "interests",
+  PLACES: "places",
+};

@@ -32,7 +32,7 @@ export default function Home() {
   const [city, setCity] = useState("Minsk");
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full w-full">
       <Card className="w-[350px]">
         <CardHeader>
           <CardTitle>Vandroyki.by</CardTitle>

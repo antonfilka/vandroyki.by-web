@@ -3,8 +3,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import ProtectedRoute from "@/modules/protectedRoute/protectedRoute";
-import { Home, LineChart, Settings, ShoppingCart } from "lucide-react";
+import {
+  Home,
+  LineChart,
+  Settings,
+  ShoppingCart,
+  SquarePi,
+} from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardLayout({
@@ -33,7 +40,7 @@ export default function DashboardLayout({
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard/suggestions"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:text-foreground md:h-8 md:w-8"
                 >
                   <ShoppingCart className="h-5 w-5" />
                   <span className="sr-only">Suggestions</span>
@@ -52,6 +59,18 @@ export default function DashboardLayout({
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right">Analytics</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/dashboard/constants"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                >
+                  <SquarePi className="h-5 w-5" />
+                  <span className="sr-only">Constants</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Constants</TooltipContent>
             </Tooltip>
           </nav>
           <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { JSX, SVGProps, useEffect, useState } from "react";
+import { JSX, SVGProps } from "react";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import {
@@ -12,124 +12,80 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SignInOptions, signIn, signOut, useSession } from "next-auth/react";
-import { TLoginButton, TLoginButtonSize } from "react-telegram-auth";
-import { TelegramAuthPayload } from "@/lib/types";
-import { toast } from "sonner";
+import { TelegramLogin } from "../teleramLogin/telegramLogin";
+import { signOut, useSession } from "next-auth/react";
 
 export const Header = () => {
   const { data: session } = useSession();
   const user = session?.user;
 
-  const [telegramData, setTelegramData] = useState<TelegramAuthPayload | null>(
-    null
-  );
-
-  useEffect(() => {
-    async function auth(telegramData: SignInOptions | undefined) {
-      const res = await signIn("credentials", telegramData);
-      console.log(res);
-      if (!res?.error) {
-        toast.success("Welcome!");
-      } else {
-        toast.error("Failed to sign in");
-      }
-    }
-    if (telegramData && !user) {
-      auth(telegramData);
-    }
-  }, [telegramData, user]);
-
   return (
-    <>
-      <header className="fixed left-0 right-0 top-0 z-50 bg-background flex h-[80px] w-full shrink-0 items-center px-4 md:px-6 shadow-[#b5b5b55b] shadow-md">
-        <Link className="mr-6 hidden lg:flex" href="#">
-          <CarIcon className="h-6 w-6" />
-          <span className="sr-only">Car E-commerce</span>
+    <header className="fixed left-0 right-0 top-0 z-50 bg-background flex h-[80px] w-full shrink-0 items-center px-4 md:px-6 shadow-[#b5b5b55b] shadow-md">
+      <Link className="mr-6 hidden lg:flex" href="#">
+        <CarIcon className="h-6 w-6" />
+        <span className="sr-only">Car E-commerce</span>
+      </Link>
+      <div className="ml-auto flex gap-2">
+        <Link
+          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          href="/"
+        >
+          Home
         </Link>
-        <div className="ml-auto flex gap-2">
+        <Link
+          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          href="/places"
+        >
+          Places
+        </Link>
+        {(user?.role === "MANAGER" || user?.role === "ADMIN") && (
           <Link
             className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
-            href="/"
+            href="/dashboard"
           >
-            Home
+            Dashboard
           </Link>
-          <Link
-            className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
-            href="/places"
-          >
-            Places
-          </Link>
-          {(user?.role === "MANAGER" || user?.role === "ADMIN") && (
-            <Link
-              className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
-              href="/dashboard"
-            >
-              Dashboard
-            </Link>
-          )}
-
-          {!user && (
-            <TLoginButton
-              botName="vandroyki_by_bot"
-              buttonSize={TLoginButtonSize.Large}
-              lang="en"
-              usePic={true}
-              cornerRadius={20}
-              onAuthCallback={(user) =>
-                setTelegramData({
-                  id: user.id,
-                  username: user.username,
-                  firstName: user.first_name,
-                  lastName: user.last_name,
-                  picture: user.photo_url,
-                  authDate: user.auth_date,
-                  hash: user.hash,
-                })
-              }
-              requestAccess={"write"}
-            />
-          )}
-          {!!user && (
-            <>
-              <Badge variant="outline">
-                {user.username
-                  ? user.username
-                  : `${user.firstName} ${user.lastName}`}
-              </Badge>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
+        )}
+        {!user && <TelegramLogin />}
+        {!!user && (
+          <>
+            <Badge variant="outline">
+              {user.username
+                ? user.username
+                : `${user.firstName} ${user.lastName}`}
+            </Badge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="overflow-hidden rounded-full"
+                >
+                  <Image
+                    src={user.picture || "/avatarPlaceholder.jpeg"}
+                    width={36}
+                    height={36}
+                    alt="Avatar"
                     className="overflow-hidden rounded-full"
-                  >
-                    <Image
-                      src={user.picture || "/avatarPlaceholder.jpeg"}
-                      width={36}
-                      height={36}
-                      alt="Avatar"
-                      className="overflow-hidden rounded-full"
-                      priority
-                    />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>Settings</DropdownMenuItem>
-                  <DropdownMenuItem>Support</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut()}>
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
-          )}
-        </div>
-      </header>
-    </>
+                    priority
+                  />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuItem>Support</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => signOut()}>
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        )}
+      </div>
+    </header>
   );
 };
 

@@ -25,18 +25,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
-        )}
+        className={cn("bg-background font-sans antialiased", fontSans.variable)}
       >
         <Providers>
           <Toaster richColors />
           <Modals />
-          <main className="relative bg-background text-foreground flex w-screen min-h-screen h-screen flex-col items-center no-scrollbar">
-            <Header />
-            <div className="w-full h-full mt-[80px]">{children}</div>
-          </main>
+          <Header />
+          <main>{children}</main>
         </Providers>
       </body>
     </html>
