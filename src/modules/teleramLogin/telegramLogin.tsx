@@ -29,7 +29,7 @@ export const TelegramLogin = () => {
 
   return (
     <TLoginButton
-      botName="vandroyki_by_bot"
+      botName={process.env.NEXT_PUBLIC_BOT_NAME}
       buttonSize={TLoginButtonSize.Large}
       lang="en"
       usePic={true}

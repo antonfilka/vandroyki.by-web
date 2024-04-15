@@ -13,9 +13,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TelegramLogin } from "../teleramLogin/telegramLogin";
-import { signOut, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { KeyRound } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export const Header = () => {
+  const router = useRouter();
   const { data: session } = useSession();
   const user = session?.user;
 
@@ -46,7 +49,14 @@ export const Header = () => {
             Dashboard
           </Link>
         )}
-        {!user && <TelegramLogin />}
+        {!user && (
+          <>
+            <TelegramLogin />
+            <button onClick={() => signIn("google")}>
+              <KeyRound />
+            </button>
+          </>
+        )}
         {!!user && (
           <>
             <Badge variant="outline">
@@ -72,7 +82,9 @@ export const Header = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => router.push("/profile")}>
+                  Profile
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>

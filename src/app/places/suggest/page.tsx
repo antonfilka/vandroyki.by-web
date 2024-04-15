@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -17,9 +16,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { DestinationView } from "@/modules/inedex";
+import { DestinationPreview } from "@/modules/inedex";
 import { useSession } from "next-auth/react";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -31,31 +30,67 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import API, { QUERY_KEYS } from "@/api";
+import { ImageUploader } from "@/modules/imageUploader/imageUploader";
+import { toast } from "sonner";
+import { SelectGroup } from "@radix-ui/react-select";
+import dynamic from "next/dynamic";
+import {
+  Credenza,
+  CredenzaBody,
+  CredenzaClose,
+  CredenzaContent,
+  CredenzaDescription,
+  CredenzaFooter,
+  CredenzaHeader,
+  CredenzaTitle,
+  CredenzaTrigger,
+} from "@/components/ui/credenza";
+import { LocateFixed } from "lucide-react";
+import { useState } from "react";
+import { LatLngExpression } from "leaflet";
 
-interface FormValues {
+const MapWithNoSSR = dynamic(
+  () => import("../../../modules/chooseLocationMap/chooseLocationMap"),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
+
+export interface SuggestPlaceFormValues {
   title: string;
   description: string;
-  images: string[];
-  location: string;
+  images: {
+    link: string;
+  }[];
+  // location: string;
   cityId?: string;
 }
 
 const FormSchema = z.object({
-  title: z.string({
-    required_error: "Please set a title.",
-  }),
-  description: z.string({
-    required_error: "Please set a description.",
-  }),
-  images: z.string({ required_error: "Attach at least one image." }).array(),
-  location: z.string({ required_error: "Choose a location." }),
-  cityId: z.string({ required_error: "Set a city." }),
+  title: z
+    .string({
+      required_error: "Please set a title.",
+    })
+    .min(5, "Title must be at least 5 characters."),
+  description: z
+    .string({
+      required_error: "Please set a description.",
+    })
+    .min(30, "Description must be at least 30 characters."),
+  images: z.object({ link: z.string() }).array(),
+  // location: z.string({ required_error: "Choose a location." }),
+  cityId: z.string({ required_error: "Set a city." }).uuid("Set a city."),
 });
+
+export const INIT_MAP_POSITION: LatLngExpression = [51.505, -0.09];
 
 export default function Suggest() {
   const session = useSession();
+  const [position, setPosition] = useState<LatLngExpression | string>("");
+
   const user = session.data?.user;
 
   const cities = useQuery({
@@ -63,30 +98,69 @@ export default function Suggest() {
     queryFn: API.PLACES.GET_CITIES,
   });
 
-  const form = useForm<z.infer<typeof FormSchema>>({
+  const form = useForm<SuggestPlaceFormValues>({
     resolver: zodResolver(FormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      images: [],
+      // location: "",
+      cityId: "",
+    },
   });
 
-  const onSubmit = async (data: z.infer<typeof FormSchema>) => {};
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "images",
+  });
+
+  const onSubmitSuccess = () => {
+    toast.success("Suggestion created");
+    form.reset();
+  };
+
+  const onSubmitError = () => {
+    toast.error("Failed to create suggestion");
+  };
+
+  const submitMutation = useMutation({
+    mutationFn: API.PLACES.CREATE,
+    onSuccess: onSubmitSuccess,
+    onError: onSubmitError,
+  });
+
+  const onSubmit = async (data: SuggestPlaceFormValues) => {
+    submitMutation.mutate({
+      ...data,
+      images: data.images.map((i) => i.link),
+      location: JSON.stringify(position),
+    });
+  };
 
   return (
-    <div className="w-full h-full flex justify-between gap-5 p-8">
+    <div className="w-full h-full flex justify-between gap-5 p-8 pb-2">
       <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-2xl">Suggest new place</CardTitle>
-          {user ? (
-            <CardDescription>Please, enter all details</CardDescription>
-          ) : (
-            <CardDescription>Authorize to continue please</CardDescription>
-          )}
-        </CardHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
+            <CardHeader>
+              <div className="w-full grid grid-cols-2 gap-4">
+                <div>
+                  <CardTitle className="text-2xl">Suggest new place</CardTitle>
+                  {user ? (
+                    <CardDescription>Please, enter all details</CardDescription>
+                  ) : (
+                    <CardDescription>
+                      Authorize to continue please
+                    </CardDescription>
+                  )}
+                </div>
+                <Button type="submit" className="w-full h-full">
+                  Submit suggestion!
+                </Button>
+              </div>
+            </CardHeader>
 
-        <CardContent>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="w-2/3 space-y-6"
-            >
+            <CardContent>
               <div className="grid gap-4">
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
@@ -109,21 +183,20 @@ export default function Suggest() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>City</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                        <Select onValueChange={field.onChange} defaultValue="">
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select city" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {cities.data?.data.map((city) => (
-                              <SelectItem key={city.id} value={city.name}>
-                                {city.name}
-                              </SelectItem>
-                            ))}
+                            <SelectGroup>
+                              {cities.data?.data.map((city) => (
+                                <SelectItem key={city.id} value={city.id}>
+                                  {city.name}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
                           </SelectContent>
                         </Select>
                         <FormDescription></FormDescription>
@@ -153,33 +226,45 @@ export default function Suggest() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <div className="flex items-center">
-                    <Label htmlFor="description">Images</Label>
-                  </div>
+                  <FormLabel>Images</FormLabel>
+                  <ImageUploader
+                    append={append}
+                    remove={remove}
+                    fields={fields}
+                  />
                 </div>
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Location</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Location" {...field} />
-                      </FormControl>
-                      <FormDescription></FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full">
-                  Submit suggestion!
-                </Button>
+                <Credenza>
+                  <CredenzaTrigger asChild>
+                    <Button>
+                      Choose location <LocateFixed className="ml-2" />
+                    </Button>
+                  </CredenzaTrigger>
+                  <CredenzaContent>
+                    <CredenzaHeader>
+                      <CredenzaTitle>Choose location</CredenzaTitle>
+                      <CredenzaDescription>
+                        {position && JSON.stringify(position)}
+                      </CredenzaDescription>
+                    </CredenzaHeader>
+                    <CredenzaBody>
+                      <MapWithNoSSR
+                        position={position}
+                        setPosition={setPosition}
+                      />
+                    </CredenzaBody>
+                    <CredenzaFooter>
+                      <CredenzaClose asChild>
+                        <Button>Set</Button>
+                      </CredenzaClose>
+                    </CredenzaFooter>
+                  </CredenzaContent>
+                </Credenza>
               </div>
-            </form>
-          </Form>
-        </CardContent>
+            </CardContent>
+          </form>
+        </Form>
       </Card>
-      <DestinationView />
+      <DestinationPreview control={form.control} cities={cities.data} />
     </div>
   );
 }

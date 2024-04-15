@@ -25,3 +25,4 @@ export type TelegramAuthPayload = {
 };
 
 export type Role = "MANAGER" | "USER" | "ADMIN";
+export type LanguageCode = "BELARUSSIAN" | "ENGLISH" | "RUSSIAN";

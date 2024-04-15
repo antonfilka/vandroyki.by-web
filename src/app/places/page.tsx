@@ -7,7 +7,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PlacesList } from "@/modules/destinationListItem";
-import { DestinationView } from "@/modules/destinationView";
 import Link from "next/link";
 
 export default function Places() {
@@ -25,7 +24,6 @@ export default function Places() {
           <PlacesList />
         </CardContent>
       </Card>
-      <DestinationView />
     </div>
   );
 }

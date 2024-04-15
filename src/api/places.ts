@@ -2,6 +2,7 @@ import { axiosInstance } from "./axiosConfig";
 
 const DESTINATIONS_URLS = {
   GET_ALL: "/destinations",
+  CREATE: "/destinations",
   GET_CITIES: "/editable-constants/cities",
   ADD_CITIES: "/editable-constants/cities",
   DELETE_CITIES: "/editable-constants/cities/delete",
@@ -17,6 +18,13 @@ interface Place {
 }
 export interface GetAllPlacesResponse {
   data: Place[];
+}
+
+export interface CreatePLaceBody {
+  title: string;
+  description: string;
+  images: string[];
+  location: string;
 }
 
 interface City {
@@ -43,6 +51,11 @@ export interface DeleteConstantsBody {
 
 async function getAllPlaces(): Promise<GetAllPlacesResponse> {
   const response = await axiosInstance.get(DESTINATIONS_URLS.GET_ALL);
+  return response.data;
+}
+
+async function createPlace(body: CreatePLaceBody): Promise<void> {
+  const response = await axiosInstance.post(DESTINATIONS_URLS.CREATE, body);
   return response.data;
 }
 
@@ -87,6 +100,7 @@ async function deleteInterests(body: DeleteConstantsBody): Promise<void> {
 
 export const PLACES = {
   GET_ALL: getAllPlaces,
+  CREATE: createPlace,
   GET_CITIES: getCities,
   ADD_CITIES: createCities,
   DELETE_CITIES: deleteCities,

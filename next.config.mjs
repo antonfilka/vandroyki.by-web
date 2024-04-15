@@ -12,6 +12,11 @@ const nextConfig = {
         hostname: "t.me",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "vandroykidev.storage.yandexcloud.net",
+        port: "",
+      },
     ],
   },
 };
